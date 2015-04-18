@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AppHub</string>
+    <string name="app_home">Home</string>
+    <string name="app_detail">AppDetail</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="sort_by">Sort by</string>
+    <string name="sort_price">Price</string>
+    <string name="sort_rating">Rating</string>
+    <string name="hint">Enter text</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="clear">Clear All</string>
+    <string name="enter">Apply</string>
+    <string name="dollar">$</string>
+    <string name="count">Product Count: </string>
+    <string name="free">free</string>
+        <string name="send_to">Send To</string>
+
+</resources>

@@ -1,0 +1,39 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <include
+        android:id="@+id/action"
+        layout="@layout/custom_action_bar" />
+
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/action" >
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingBottom="20dp"
+            android:paddingEnd="10dp"
+            android:paddingStart="10dp"
+            android:scrollbarStyle="outsideOverlay" />
+
+        <include
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            layout="@layout/filter_layout" />
+    </android.support.v4.widget.DrawerLayout>
+
+    <TextView
+        android:id="@+id/list_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_alignParentBottom="true"
+        android:textSize="18sp" />
+
+</RelativeLayout>

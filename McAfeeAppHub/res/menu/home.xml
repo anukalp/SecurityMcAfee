@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.android.flightscheduler.FlightListActivity" >
+
+    <item
+        android:id="@+id/sort_by"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/sort_by"/>
+
+</menu>
