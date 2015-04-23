@@ -25,7 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -56,6 +56,8 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
 
     public ArrayList<AppHubDetailsJsonData> mData;
 
+    public ArrayList<AppHubDetailsJsonData> mIntentData;
+
     private TextView mProductTextView;
 
     @Override
@@ -74,8 +76,9 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
         mListView.setAdapter(mAdapter);
         mDrawerLayout.setDrawerShadow(android.R.drawable.alert_light_frame, GravityCompat.START);
         mDrawerLayout.setDrawerListener(this);
-        mProductTextView = (TextView)findViewById(R.id.list_count);
-        ImageView image = (ImageView)findViewById(R.id.filter_button);
+        mProductTextView = new TextView(this);
+        mListView.addFooterView(mProductTextView);
+        ImageButton image = (ImageButton)findViewById(R.id.filter_button);
         image.setVisibility(View.VISIBLE);
         image.setOnClickListener(new OnClickListener() {
 
@@ -89,12 +92,31 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
             }
         });
         mListView.setOnItemClickListener(this);
+        if (null != getIntent()) {
+            mIntentData = getIntent().getParcelableArrayListExtra(SplashScreenActivity.DATA_EXTRA);
+            if (null != mIntentData) {
+                mAdapter.setFlightData(mIntentData);
+                mAdapter.notifyDataSetChanged();
+                mProductTextView.setText(getResources().getText(R.string.count) + ""
+                        + mIntentData.size());
+            }
+        }
     }
 
     @Override
     public void onStart() {
         getLoaderManager().initLoader(0, null, this);
         super.onStart();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // TODO : apply fix properly this is just not to load the activity again
+        // To solve when back pressed to home it reads json data again from launcher icon
+        // Having a local Database will be a good option
+        if (!moveTaskToBack(true)) {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -138,6 +160,11 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
     @Override
     public void onLoadFinished(Loader<CustomJSONWrapper> loader, CustomJSONWrapper data) {
         if (null != data) {
+            if (null != mIntentData) {
+                mData = mIntentData;
+                mIntentData = null;
+                return;
+            }
             mAdapter.setFlightData(data.getListData());
             mAdapter.notifyDataSetChanged();
             mData = data.getListData();
@@ -181,7 +208,8 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
     }
 
     public void restFilters() {
-        new FilterAsyncTask().execute();
+        if (null != mData)
+            new FilterAsyncTask().execute();
     }
 
     /**

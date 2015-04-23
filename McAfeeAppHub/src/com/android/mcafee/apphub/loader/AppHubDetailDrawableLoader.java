@@ -1,7 +1,7 @@
 
 package com.android.mcafee.apphub.loader;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -31,7 +31,8 @@ public class AppHubDetailDrawableLoader extends AsyncTask<String, Void, Bitmap> 
     @Override
     protected Bitmap doInBackground(String... params) {
         data = params[0];
-        return downloadUrlToBitmap(data, 240, 240);
+        final ImageView imageView = mImageViewReference.get();
+        return downloadUrlToBitmap(data, imageView.getWidth(), imageView.getHeight());
     }
 
     // Once complete, see if ImageView is still around and set bitmap.
@@ -68,20 +69,12 @@ public class AppHubDetailDrawableLoader extends AsyncTask<String, Void, Bitmap> 
         return inSampleSize;
     }
 
-    private Bitmap decodeSampledBitmapFromStream(InputStream is, int reqWidth, int reqHeight) {
-
-        Log.d(TAG, "decodeSampledBitmapFromStream :: " + is);
-/*        // First decode with inJustDecodeBounds=true to check dimensions
+    private Bitmap decodeSampledBitmapFrombytes(byte[] photoData, int reqWidth, int reqHeight) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-
-        // Calculate inSampleSize
-        // options.inSampleSize = 2;//calculateInSampleSize(options, reqWidth,
-        // reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;*/
-        return BitmapFactory.decodeStream(is);
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
     }
 
     /**
@@ -92,14 +85,22 @@ public class AppHubDetailDrawableLoader extends AsyncTask<String, Void, Bitmap> 
      */
     private Bitmap downloadUrlToBitmap(String urlString, int reqWidth, int reqHeight) {
         HttpURLConnection urlConnection = null;
-        BufferedInputStream in = null;
+        InputStream in = null;
         Log.d(TAG, "doInBackground :: " + data + " width :: " + reqHeight + " height :  "
                 + reqWidth);
         try {
             final URL url = new URL(urlString);
             urlConnection = (HttpURLConnection)url.openConnection();
-            in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
-            return decodeSampledBitmapFromStream(in, reqWidth, reqHeight);
+            in = urlConnection.getInputStream();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[IO_BUFFER_SIZE];
+
+            while ((nRead = in.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            return decodeSampledBitmapFrombytes(buffer.toByteArray(), reqWidth, reqHeight);
         } catch (final IOException e) {
             Log.e(TAG, "Error in downloadBitmap - " + e);
         } finally {
@@ -115,5 +116,4 @@ public class AppHubDetailDrawableLoader extends AsyncTask<String, Void, Bitmap> 
         }
         return null;
     }
-
 }

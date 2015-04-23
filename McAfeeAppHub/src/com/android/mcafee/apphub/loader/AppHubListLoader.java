@@ -20,13 +20,18 @@ public class AppHubListLoader extends AsyncTaskLoader<CustomJSONWrapper> {
 
     private CustomJSONWrapper mJsonWrapper;
 
+    private CustomJSONWrapper sCachedResult;
+
     public AppHubListLoader(Context context) {
         super(context);
     }
 
     @Override
     public CustomJSONWrapper loadInBackground() {
-        CustomJSONWrapper mData = null;
+        CustomJSONWrapper mData = sCachedResult;
+        sCachedResult = null;
+        if (null != mData)
+            return mData;
         ContentValues cv = CustomFilter.getInstance().getCurrentFilter();
         HttpURLConnection urlConnection = null;
         try {
@@ -41,7 +46,7 @@ public class AppHubListLoader extends AsyncTaskLoader<CustomJSONWrapper> {
             if (null != urlConnection) {
                 urlConnection.disconnect();
             }
-            if (null != mData.getListData()) {
+            if (null != mData && null != mData.getListData()) {
                 Collections.sort(mData.getListData());
                 int length = mData.getListData().size();
                 if (length > 0) {
@@ -59,6 +64,14 @@ public class AppHubListLoader extends AsyncTaskLoader<CustomJSONWrapper> {
             }
         }
         return mData;
+    }
+
+    public void cacheResult() {
+        if (mJsonWrapper == null) {
+            sCachedResult = null;
+        } else {
+            sCachedResult = mJsonWrapper;
+        }
     }
 
     @Override

@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
@@ -16,18 +16,18 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scaleType="fitXY" />
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerCrop" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingEnd="5dp"
-            android:paddingStart="5dp" >
+            android:paddingEnd="20dp"
+            android:paddingStart="20dp" >
 
             <TextView
                 android:id="@+id/product_name"
@@ -70,11 +70,12 @@
         android:gravity="center"
         android:paddingEnd="10dp"
         android:paddingStart="10dp"
-        android:textSize="16sp" />
+        android:textSize="14sp" />
 
     <ListView
         android:id="@+id/details_list"
         android:layout_width="match_parent"
+        android:divider="@null"
         android:layout_height="0dp"
         android:layout_weight="1" >
     </ListView>

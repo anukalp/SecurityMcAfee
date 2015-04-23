@@ -1,6 +1,8 @@
 
 package com.android.mcafee.apphub;
 
+import java.lang.ref.WeakReference;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.mcafee.apphub.loader.AppHubDetailDrawableLoader;
+import com.android.mcafee.apphub.loader.PhotoManager;
 import com.android.mcafee.apphub.model.AppHubDetailsJsonData;
 
 public class AppHubDetailActivity extends Activity implements OnClickListener {
@@ -44,9 +46,8 @@ public class AppHubDetailActivity extends Activity implements OnClickListener {
         setContentView(R.layout.detail_layout);
         String imageURL = mData.getImageURL();
         ImageView imageView = (ImageView)findViewById(R.id.imageView);
-        if (null != imageURL) {
-            new AppHubDetailDrawableLoader(imageView).execute(imageURL);
-        }
+        ((PhotoManager)getApplicationContext().getSystemService(PhotoManager.PHOTO_SERVICE))
+                .preparePhotoUris(new WeakReference<ImageView>(imageView), imageURL);
         setupLayout();
     }
 

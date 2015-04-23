@@ -4,62 +4,75 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <LinearLayout
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackground" >
 
-        <Button
-            android:id="@+id/app_store"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/holo_blue_dark"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:text="App Store"
-            android:textStyle="bold" />
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/share"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/darker_gray"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:text="Share"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/app_store"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/holo_blue_dark"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:text="App Store"
+                android:textStyle="bold" />
 
-    <LinearLayout
+            <Button
+                android:id="@+id/share"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:text="Share"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <Button
-            android:id="@+id/back"
-            android:layout_width="0dp"
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackground" >
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/holo_blue_dark"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:text="Back"
-            android:textStyle="bold" />
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/sms"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/darker_gray"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:text="SMS"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/back"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/holo_blue_dark"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:text="Back"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/sms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:text="SMS"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 
 </LinearLayout>
