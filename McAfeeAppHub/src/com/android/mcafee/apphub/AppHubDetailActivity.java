@@ -10,14 +10,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.mcafee.apphub.loader.PhotoManager;
 import com.android.mcafee.apphub.model.AppHubDetailsJsonData;
+import com.android.volley.toolbox.NetworkImageView;
 
 public class AppHubDetailActivity extends Activity implements OnClickListener {
+
+    public static final String TAG = "MyTag";
 
     public static final String DETAIL_DATA = "detail_data";
 
@@ -45,9 +47,9 @@ public class AppHubDetailActivity extends Activity implements OnClickListener {
             finish();
         setContentView(R.layout.detail_layout);
         String imageURL = mData.getImageURL();
-        ImageView imageView = (ImageView)findViewById(R.id.imageView);
+        NetworkImageView imageView = (NetworkImageView)findViewById(R.id.imageView);
         ((PhotoManager)getApplicationContext().getSystemService(PhotoManager.PHOTO_SERVICE))
-                .preparePhotoUris(new WeakReference<ImageView>(imageView), imageURL);
+                .preparePhotoUris(new WeakReference<NetworkImageView>(imageView), imageURL);
         setupLayout();
     }
 

@@ -29,80 +29,70 @@ public class AppHubDetailsJsonData extends AppHubListLoaderData implements
 
     public static final String TAG_GOOGLE_PLAY = "url";
 
-    private final String mImageURL;
+    private final String imagee;
 
-    private final String mType;
+    private final String type;
 
-    private final String mLastUpdate;
+    private final String last_update;
 
-    private final long mUsers;
+    private final long users;
 
-    private final String mDescription;
+    private final String description;
 
-    private final String mGooglePlayURL;
+    private final String url;
 
-    public AppHubDetailsJsonData(String mName, double mPrice, double mRating, String mImageURL,
-            String mType, String mLastUpdate, long mUsers, String mDescrption, String mGooglePlayURL) {
-        super(mName, mPrice, mRating);
-        this.mImageURL = mImageURL;
-        this.mType = mType;
-        this.mLastUpdate = mLastUpdate;
-        this.mUsers = mUsers;
-        this.mDescription = mDescrption;
-        this.mGooglePlayURL = mGooglePlayURL;
-    }
 
     private AppHubDetailsJsonData(Parcel in) {
         super(in);
-        mImageURL = in.readString();
-        mType = in.readString();
-        mUsers = in.readLong();
-        mLastUpdate = in.readString();
-        mDescription = in.readString();
-        mGooglePlayURL = in.readString();
+        imagee = in.readString();
+        type = in.readString();
+        users = in.readLong();
+        last_update = in.readString();
+        description = in.readString();
+        url = in.readString();
     }
 
     public String getImageURL() {
-        return mImageURL;
+        return imagee;
     }
 
     public String getType() {
-        return mType;
+        return type;
     }
 
     public String getLastUpdate() {
-        return mLastUpdate;
+        return last_update;
     }
 
     public long getUsers() {
-        return mUsers;
+        return users;
     }
 
     public String getGooglePlayURL() {
-        return mGooglePlayURL;
+        return url;
     }
 
     public String getDescription() {
-        return mDescription;
+        return description;
     }
 
     @Override
     public String toString() {
-        return "AppHubDetailsJsonData [mImageURL=" + mImageURL + ", mType=" + mType
-                + ", mLastUpdate=" + mLastUpdate + ", mUsers=" + mUsers + ", mDescription="
-                + mDescription + ", mGooglePlayURL=" + mGooglePlayURL + ", toString()="
+        return "AppHubDetailsJsonData [mImageURL=" + imagee + ", mType=" + type
+                + ", mLastUpdate=" + last_update + ", mUsers=" + users + ", mDescription="
+                + description + ", mGooglePlayURL=" + url + ", toString()="
                 + super.toString() + "]";
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
-        dest.writeString(mImageURL);
-        dest.writeString(mType);
-        dest.writeLong(mUsers);
-        dest.writeString(mLastUpdate);
-        dest.writeString(mDescription);
-        dest.writeString(mGooglePlayURL);
+        dest.writeString(imagee);
+        dest.writeString(type);
+        dest.writeLong(users);
+        dest.writeString(last_update);
+        dest.writeString(description);
+        dest.writeString(url);
     }
 
     @Override

@@ -4,6 +4,7 @@ package com.android.mcafee.apphub;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -54,7 +55,7 @@ public class HomeListActivity extends Activity implements LoaderCallbacks<Custom
 
     private AppHubListAdapter mAdapter;
 
-    public ArrayList<AppHubDetailsJsonData> mData;
+    public List<AppHubDetailsJsonData> mData;
 
     public ArrayList<AppHubDetailsJsonData> mIntentData;
 

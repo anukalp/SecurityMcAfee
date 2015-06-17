@@ -2,8 +2,10 @@
 package com.android.mcafee.apphub.loader;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,9 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import android.app.ActivityManager;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.http.AndroidHttpClient;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.HandlerThread;
@@ -24,6 +30,28 @@ import android.os.Message;
 import android.util.Log;
 import android.util.LruCache;
 import android.widget.ImageView;
+
+import com.android.mcafee.apphub.model.AppHubDetailsJsonData;
+import com.android.mcafee.apphub.model.CustomJSONWrapper;
+import com.android.mcafee.apphub.model.GsonRequest;
+import com.android.volley.Cache.Entry;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.Response.Listener;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HttpClientStack;
+import com.android.volley.toolbox.HttpStack;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.ImageLoader.ImageCache;
+import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 
 public abstract class PhotoManager implements ComponentCallbacks2 {
 
@@ -45,13 +73,17 @@ public abstract class PhotoManager implements ComponentCallbacks2 {
         return new PhotoManagerImpl(context);
     }
 
-    public abstract void preparePhotoUris(WeakReference<ImageView> view, String request);
+    public abstract void preparePhotoUris(WeakReference<NetworkImageView> view, String request);
 
+    public abstract void startRequest(String url, Listener<AppHubDetailsJsonData[]> listener);
 }
 
-class PhotoManagerImpl extends PhotoManager implements Callback {
+class PhotoManagerImpl extends PhotoManager implements Callback, ImageCache {
 
     private final LruCache<Object, Bitmap> mBitmapCache;
+    
+    /** Default on-disk cache directory. */
+    private static final String DEFAULT_CACHE_DIR = "voley";
 
     private static final int BITMAP_CACHE_SIZE = 36864 * 48; // 1728K
 
@@ -68,10 +100,21 @@ class PhotoManagerImpl extends PhotoManager implements Callback {
 
     private BitmapLoaderThread mLoaderThread;
 
+    private RequestQueue mRequestQueue;
+
+    private RequestQueue mJsonQueue;
+
+    private ImageLoader mImageLoaderTask;
+
+    private DiskBasedCache mJsonCache;
+
+    private final Context mContext;
+
     public PhotoManagerImpl(Context context) {
+        mContext = context;
         final ActivityManager am = ((ActivityManager)context
                 .getSystemService(Context.ACTIVITY_SERVICE));
-
+        mRequestQueue = Volley.newRequestQueue(context);
         final float cacheSizeAdjustment = (am.isLowRamDevice()) ? 0.5f : 1.0f;
 
         final int bitmapCacheSize = (int)(cacheSizeAdjustment * BITMAP_CACHE_SIZE);
@@ -79,6 +122,89 @@ class PhotoManagerImpl extends PhotoManager implements Callback {
             @Override
             protected int sizeOf(Object key, Bitmap value) {
                 return value.getByteCount();
+            }
+        };
+        // DiskCache for json Request
+        File cacheDir = new File(context.getCacheDir(), DEFAULT_CACHE_DIR);
+        mJsonCache = new DiskBasedCache(cacheDir);
+        mJsonQueue = getRequestQueue();
+        mImageLoaderTask = new ImageLoader(mRequestQueue, this);
+    }
+
+    public RequestQueue getRequestQueue() {
+        HttpStack stack = null;
+        String userAgent = "volley/0";
+        try {
+            String packageName = mContext.getPackageName();
+            PackageInfo info = mContext.getPackageManager().getPackageInfo(packageName, 0);
+            userAgent = packageName + "/" + info.versionCode;
+        } catch (NameNotFoundException e) {
+        }
+
+        if (stack == null) {
+            if (Build.VERSION.SDK_INT >= 9) {
+                stack = new HurlStack();
+            } else {
+                // Prior to Gingerbread, HttpUrlConnection was unreliable.
+                // See:
+                // http://android-developers.blogspot.com/2011/09/androids-http-clients.html
+                stack = new HttpClientStack(AndroidHttpClient.newInstance(userAgent));
+            }
+        }
+
+        Network network = new BasicNetwork(stack);
+        RequestQueue lQueue = new RequestQueue(mJsonCache, network);
+        // Start the queue
+        lQueue.start();
+        return lQueue;
+    }
+
+    /**
+     * add the request to the request queue
+     * 
+     * @param req
+     */
+    private <T> void addToRequestQueue(Request<T> req) {
+        req.setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        mJsonQueue.add(req);
+    }
+
+    /**
+     * Start Request Uses the Custom GSON request to get and parse the json from
+     * server and also GSON will loads the data into the POJO.
+     * 
+     * @param url
+     */
+    public void startRequest(String url, Listener<AppHubDetailsJsonData[]> response) {
+        Log.i(TAG, "startRequest reponse" + url);
+        Entry entry = mJsonCache.get(url);
+        if (entry != null) {
+            try {
+                String data = new String(entry.data, "UTF-8");
+                Log.i(TAG, "Cache Hit");
+                if (null != data) {
+                    Gson gson = new Gson();
+                    AppHubDetailsJsonData[] result = gson.fromJson(data,
+                            AppHubDetailsJsonData[].class);
+                    response.onResponse(result);
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            GsonRequest<AppHubDetailsJsonData[]> jsObjRequest = new GsonRequest<AppHubDetailsJsonData[]>(
+                    url, AppHubDetailsJsonData[].class, null, response, createErrorListener());
+            addToRequestQueue(jsObjRequest);
+        }
+    }
+
+    private Response.ErrorListener createErrorListener() {
+        return new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                String errorMsg = error.getMessage();
+                Log.i(TAG, "Cache miss " + errorMsg);
             }
         };
     }
@@ -104,14 +230,14 @@ class PhotoManagerImpl extends PhotoManager implements Callback {
     }
 
     @Override
-    public void preparePhotoUris(WeakReference<ImageView> view, String request) {
-        boolean loaded = loadCachedPhoto(view, request);
-        if (loaded) {
-            mPendingRequests.remove(request);
-        } else {
-            mPendingRequests.put(request, view);
-            mMainThreadHandler.sendEmptyMessage(MESSAGE_REQUEST_LOADING);
-        }
+    public void preparePhotoUris(WeakReference<NetworkImageView> view, String request) {
+        /*
+         * boolean loaded = loadCachedPhoto(view, request); if (loaded) {
+         * mPendingRequests.remove(request); } else {
+         * mPendingRequests.put(request, view);
+         * mMainThreadHandler.sendEmptyMessage(MESSAGE_REQUEST_LOADING); }
+         */
+        view.get().setImageUrl(request, mImageLoaderTask);
     }
 
     private boolean loadCachedPhoto(WeakReference<ImageView> imageViewReference, String request) {
@@ -305,6 +431,17 @@ class PhotoManagerImpl extends PhotoManager implements Callback {
                 continue;
             photoUris.put(uri, Math.min(view.get().getHeight(), view.get().getWidth()));
         }
+    }
+
+    @Override
+    public Bitmap getBitmap(String url) {
+        // TODO Auto-generated method stub
+        return mBitmapCache.get(url);
+    }
+
+    @Override
+    public void putBitmap(String url, Bitmap bitmap) {
+        mBitmapCache.put(url, bitmap);
     }
 
 }

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Timer;
@@ -18,11 +20,20 @@ import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.android.mcafee.apphub.filter.CustomFilter;
 import com.android.mcafee.apphub.filter.FilterUtils;
+import com.android.mcafee.apphub.loader.PhotoManager;
+import com.android.mcafee.apphub.model.AppHubDetailsJsonData;
 import com.android.mcafee.apphub.model.CustomJSONWrapper;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
 
 public class SplashScreenActivity extends Activity {
 
@@ -36,7 +47,7 @@ public class SplashScreenActivity extends Activity {
 
     protected static final int TWO_VALUE = 2;
 
-    private CustomJSONWrapper mData;
+    private ArrayList<AppHubDetailsJsonData> mData;
 
     private int mCount;
 
@@ -94,39 +105,23 @@ public class SplashScreenActivity extends Activity {
 
     private int mViewId;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.splash_screen);
-        new Timer(TAG_SPLASH_SCREEN).scheduleAtFixedRate(mTask,
-                new Date(System.currentTimeMillis()), 300);
-
-        new Thread(new Runnable() {
-
+    private Response.Listener<AppHubDetailsJsonData[]> createSuccessListener() {
+        return new Response.Listener<AppHubDetailsJsonData[]>() {
             @Override
-            public void run() {
-                ContentValues cv = CustomFilter.getInstance().getCurrentFilter();
-                HttpURLConnection urlConnection = null;
+            public void onResponse(AppHubDetailsJsonData[] response) {
                 try {
-                    URL url = new URL("http://mcafee.0x10.info/api/app?type=json");
-                    urlConnection = (HttpURLConnection)url.openConnection();
-                    InputStream is = new BufferedInputStream(urlConnection.getInputStream());
-                    mData = new CustomJSONWrapper();
-                    mData.populateJsonData(is);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (null != urlConnection) {
-                        urlConnection.disconnect();
-                    }
-                    if (null != mData && null != mData.getListData()) {
-                        Collections.sort(mData.getListData());
-                        int length = mData.getListData().size();
+                    Log.d("anu", response.toString());
+                    mData = new ArrayList<AppHubDetailsJsonData>();
+                    mData.addAll(Arrays.asList(response));
+                    ContentValues cv = CustomFilter.getInstance().getCurrentFilter();
+
+                    if (null != mData && null != mData) {
+                        Collections.sort(mData);
+                        int length = mData.size();
                         if (length > 0) {
-                            cv.put(FilterUtils.TAG_FILTER_PRICE_START, mData.getListData().get(0)
+                            cv.put(FilterUtils.TAG_FILTER_PRICE_START, mData.get(0).getPrice());
+                            cv.put(FilterUtils.TAG_FILTER_PRICE_END, mData.get(length - 1)
                                     .getPrice());
-                            cv.put(FilterUtils.TAG_FILTER_PRICE_END,
-                                    mData.getListData().get(length - 1).getPrice());
                             cv.put(FilterUtils.TAG_FILTER_RATING_START, 0.0);
                             cv.put(FilterUtils.TAG_FILTER_RATING_END, 5.0);
                             cv.put(FilterUtils.TAG_FILTER_TYPE_PRICE, true);
@@ -135,18 +130,30 @@ public class SplashScreenActivity extends Activity {
                             CustomFilter.getInstance().applyDefaultFilter();
                         }
                     }
-                }
 
-                if (null != mData) {
-                    Intent mainIntent = new Intent(SplashScreenActivity.this,
-                            HomeListActivity.class);
-                    mainIntent.putParcelableArrayListExtra(DATA_EXTRA, mData.getListData());
-                    startActivity(mainIntent);
-                    finish();
+                    if (null != mData) {
+                        Intent mainIntent = new Intent(SplashScreenActivity.this,
+                                HomeListActivity.class);
+                        mainIntent.putParcelableArrayListExtra(DATA_EXTRA, mData);
+                        startActivity(mainIntent);
+                        finish();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            };
+        };
+    }
 
-            }
-        }).start();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.splash_screen);
+        PhotoManager manager = (PhotoManager)getApplicationContext().getSystemService(
+                PhotoManager.PHOTO_SERVICE);
+        manager.startRequest("http://mcafee.0x10.info/api/app?type=json", createSuccessListener());
+        new Timer(TAG_SPLASH_SCREEN).scheduleAtFixedRate(mTask,
+                new Date(System.currentTimeMillis()), 300);
     }
 
 }

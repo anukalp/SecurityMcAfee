@@ -2,6 +2,7 @@
 package com.android.mcafee.apphub;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.android.mcafee.apphub.filter.CustomFilter;
 import com.android.mcafee.apphub.filter.FilterUtils;
@@ -28,7 +29,7 @@ public class AppHubListAdapter extends BaseAdapter {
 
     private String mDollar;
 
-    private ArrayList<AppHubDetailsJsonData> mData;
+    private List<AppHubDetailsJsonData> mData;
 
     private String mFree;
 
@@ -39,8 +40,8 @@ public class AppHubListAdapter extends BaseAdapter {
         mFree = context.getResources().getString(R.string.free);
     }
 
-    public void setFlightData(ArrayList<AppHubDetailsJsonData> data) {
-        mData = data;
+    public void setFlightData(List<AppHubDetailsJsonData> list) {
+        mData = list;
     }
 
     static class ViewHolder {

@@ -17,45 +17,39 @@ public class AppHubListLoaderData {
 
     public static final String TAG_RATING = "rating";
 
-    private final String mName;
+    private final String name;
 
-    private final double mPrice;
+    private final double price;
 
-    private final double mRating;
-
-    public AppHubListLoaderData(String mName, double mPrice, double mRating) {
-        this.mName = mName;
-        this.mPrice = mPrice;
-        this.mRating = mRating;
-    }
+    private final double rating;
 
     public AppHubListLoaderData(Parcel in) {
-        mName = in.readString();
-        mPrice = in.readDouble();
-        mRating = in.readDouble();
+        name = in.readString();
+        price = in.readDouble();
+        rating = in.readDouble();
     }
 
     public double getRating() {
-        return mRating;
+        return rating;
     }
 
     public double getPrice() {
-        return mPrice;
+        return price;
     }
 
     public String getName() {
-        return mName;
+        return name;
     }
 
     @Override
     public String toString() {
-        return "AppHubListLoaderData [mName=" + mName + ", mPrice=" + mPrice + ", mRating="
-                + mRating + "]";
+        return "AppHubListLoaderData [mName=" + name + ", mPrice=" + price + ", mRating="
+                + rating + "]";
     }
 
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mName);
-        dest.writeDouble(mPrice);
-        dest.writeDouble(mRating);
+        dest.writeString(name);
+        dest.writeDouble(price);
+        dest.writeDouble(rating);
     }
 }
